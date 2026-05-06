@@ -867,7 +867,7 @@ async function send() {
         'X-Title': 'SABI-CENTEC-CALI'
       },
       body: JSON.stringify({
-        model: 'meta-llama/llama-3.3-70b-instruct:free',
+        model: 'mistralai/mistral-7b-instruct:free',
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 1000
       })
@@ -877,7 +877,7 @@ async function send() {
     removeTyping();
 
     if (data.error) {
-      addErr('⚠️ ' + (data.error.message || 'Error de conexión.'));
+      addErr('⚠️ Error: ' + JSON.stringify(data.error));
     } else {
       const raw = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : 'No pude responder. Intenta de nuevo.';
       const htmlResp = raw
