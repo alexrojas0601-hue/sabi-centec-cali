@@ -599,7 +599,7 @@ body {
 
     <div class="welcome-card">
       <h2>Activa tu tutor gratuito</h2>
-      <p>SABI usa Google Gemini Flash — sin costo para estudiantes, docentes y familias de CENTEC.</p>
+      <p>SABI usa OpenRouter · Gemini 2.0 Flash — sin costo para estudiantes, docentes y familias de CENTEC.</p>
 
       <div class="steps">
         <div class="step">
@@ -617,7 +617,7 @@ body {
       </div>
 
       <div class="key-input-wrap">
-        <input class="key-input" id="apiKey" type="password" placeholder="AIza..." autocomplete="off"
+        <input class="key-input" id="apiKey" type="password" placeholder="sk-or-v1-..." autocomplete="off"
           onkeydown="if(event.key==='Enter')activar()"/>
       </div>
       <button class="activar-btn" onclick="activar()">⚡ Activar SABI- CENTEC CALI</button>
@@ -726,7 +726,7 @@ body {
 
   <div class="app-foot">
     <span class="foot-txt">♥ Gratuito para siempre · CENTEC Cali · Comuna 15</span>
-    <span class="foot-txt">Google Gemini Flash</span>
+    <span class="foot-txt">OpenRouter · Gemini 2.0 Flash</span>
   </div>
 
 </div>
@@ -855,16 +855,21 @@ async function send() {
   showTyping();
 
   try {
-    const GKEY = localStorage.getItem('sabi_key') || '';
-    if (!GKEY) { removeTyping(); addErr('⚠️ Configura la clave en Ajustes'); busy=false; document.getElementById('sendBtn').disabled=false; return; }
-    const url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + GKEY;
+    const ORKEY = localStorage.getItem('sabi_key') || '';
+    if (!ORKEY) { removeTyping(); addErr('⚠️ Ingresa tu clave primero'); busy=false; document.getElementById('sendBtn').disabled=false; return; }
     const prompt = buildPrompt() + '\n\nPregunta del estudiante: ' + text;
-    const res = await fetch(url, {
+    const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + ORKEY,
+        'HTTP-Referer': 'https://alexrojas0601-hue.github.io/sabi-centec-cali',
+        'X-Title': 'SABI-CENTEC-CALI'
+      },
       body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { maxOutputTokens: 1000, temperature: 0.7 }
+        model: 'google/gemini-2.0-flash-exp:free',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 1000
       })
     });
 
@@ -872,9 +877,9 @@ async function send() {
     removeTyping();
 
     if (data.error) {
-      addErr('⚠️ ' + (data.error.message || 'Error de conexión con Gemini.'));
+      addErr('⚠️ ' + (data.error.message || 'Error de conexión.'));
     } else {
-      const raw = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts[0] ? data.candidates[0].content.parts[0].text : 'No pude responder. Intenta de nuevo.';
+      const raw = data.choices && data.choices[0] && data.choices[0].message ? data.choices[0].message.content : 'No pude responder. Intenta de nuevo.';
       const htmlResp = raw
         .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
         .replace(/\*\*(.*?)\*\*/g,'<b>$1</b>')
@@ -915,7 +920,7 @@ window.addEventListener('DOMContentLoaded', function() {
 
 function activar() {
   const k = document.getElementById('apiKey').value.trim();
-  if (!k.startsWith('AIza')) { alert('La clave debe comenzar con AIza'); return; }
+  if (!k.startsWith('sk-or-') && !k.startsWith('AIza')) { alert('La clave debe comenzar con sk-or-'); return; }
   localStorage.setItem('sabi_key', k);
   apiKey = k;
   document.getElementById('welcome').style.display = 'none';
