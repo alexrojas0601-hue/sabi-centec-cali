@@ -801,6 +801,7 @@ Modo: ${modos[mode]}
 
 REGLAS SIEMPRE:
 - Usa contextos REALES de Cali y la comuna 15: el MÍO, barrios del sur (Floralia, Potrero Grande, Poblado, Mojica, Villanueva, Ciudad Córdoba), el río Cauca, la Feria de Cali, las tiendas del barrio, el parque del barrio, situaciones reales del estudiante caleño.
+- Si preguntan por LUGARES en Cali: responde con info real. Hospital Universitario del Valle: Calle 5 con Cra 36. Centro de Cali: Carrera 8. Parque del Perro: San Fernando. Loma de la Cruz: Granada. Unicentro y Chipichape: norte de Cali. Aeropuerto: Palmira. Para otras direcciones sugiere Google Maps.
 - Alinea con los Derechos Básicos de Aprendizaje (DBA) del MEN colombiano para ${grado} en ${area}.
 - Responde SIEMPRE en español colombiano cálido, motivador y cercano.
 - Usa **negritas** para conceptos clave.
@@ -903,20 +904,83 @@ function q(text) {
 }
 
 // Auto-inicializar
+let estudianteNombre = '';
+let estudianteGrado = '';
+
 window.addEventListener('DOMContentLoaded', function() {
+  // Limpiar chat siempre al iniciar
+  const chat = document.getElementById('chat');
+  if (chat) chat.innerHTML = '';
+
   const savedKey = localStorage.getItem('sabi_key');
-  if (savedKey && savedKey.startsWith('AIza')) {
+  if (savedKey && (savedKey.startsWith('sk-or-') || savedKey.startsWith('AIza'))) {
     apiKey = savedKey;
     document.getElementById('welcome').style.display = 'none';
     document.getElementById('mainApp').style.display = 'flex';
     document.getElementById('userInput').disabled = false;
     document.getElementById('userInput').placeholder = 'Escribe tu pregunta aquí...';
     document.getElementById('sendBtn').disabled = false;
+    // Show student ID panel
+    mostrarPanelEstudiante();
   } else {
     document.getElementById('welcome').style.display = 'flex';
     document.getElementById('mainApp').style.display = 'none';
   }
 });
+
+function mostrarPanelEstudiante() {
+  const chat = document.getElementById('chat');
+  chat.innerHTML = '';
+  const div = document.createElement('div');
+  div.className = 'msg sabi';
+  div.id = 'studentPanel';
+  div.innerHTML = `
+    <div class="av">S</div>
+    <div class="bub" style="width:100%;max-width:100%">
+      <b>¡Hola! Soy SABI- CENTEC CALI 🎓</b><br><br>
+      Antes de empezar, cuéntame quién eres:<br><br>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+        <input id="inputNombre" type="text" placeholder="Tu nombre completo..." 
+          style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13.5px;font-family:inherit;color:var(--text);background:#f8f9fb;outline:none;width:100%"/>
+        <select id="selectGrado" 
+          style="padding:9px 12px;border:1px solid var(--border);border-radius:10px;font-size:13.5px;font-family:inherit;color:var(--text);background:#f8f9fb;outline:none;width:100%">
+          <option value="">Selecciona tu grado...</option>
+          <option>Transición</option>
+          <option>Grado 1</option><option>Grado 2</option><option>Grado 3</option>
+          <option>Grado 4</option><option>Grado 5</option><option>Grado 6</option>
+          <option>Grado 7</option><option>Grado 8</option><option>Grado 9</option>
+          <option>Grado 10</option><option>Grado 11</option>
+          <option>Ciclo 1 (Fronteras)</option><option>Ciclo 2 (Fronteras)</option>
+          <option>Ciclo 3 (Fronteras)</option><option>Ciclo 4 (Fronteras)</option>
+        </select>
+        <button onclick="registrarEstudiante()" 
+          style="padding:11px;background:#0F3460;color:#E8A020;border:none;border-radius:10px;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">
+          ¡Empezar con SABI! →
+        </button>
+      </div>
+    </div>`;
+  chat.appendChild(div);
+}
+
+function registrarEstudiante() {
+  const nombre = document.getElementById('inputNombre').value.trim();
+  const grado = document.getElementById('selectGrado').value;
+  if (!nombre) { alert('Por favor escribe tu nombre'); return; }
+  if (!grado) { alert('Por favor selecciona tu grado'); return; }
+  
+  estudianteNombre = nombre;
+  estudianteGrado = grado;
+  
+  // Remove student panel
+  const panel = document.getElementById('studentPanel');
+  if (panel) panel.remove();
+  
+  // Welcome message personalized
+  addMsg('sabi', `¡Bienvenido/a <b>${nombre}</b>! 🎓<br><br>
+    Estoy aquí para ayudarte con tus estudios de <b>${grado}</b>.<br><br>
+    Selecciona tu área en la barra de arriba, elige el modo que necesitas y escríbeme cualquier pregunta. 
+    Te explico todo con ejemplos reales de Cali y la comuna 15. ¡Tú puedes! 💪`);
+}
 
 function activar() {
   const k = document.getElementById('apiKey').value.trim();
@@ -928,7 +992,7 @@ function activar() {
   document.getElementById('userInput').disabled = false;
   document.getElementById('userInput').placeholder = 'Escribe tu pregunta aquí...';
   document.getElementById('sendBtn').disabled = false;
-  addMsg('sabi', '✅ <b>¡SABI- CENTEC CALI activado!</b> La clave quedó guardada en este navegador. ¡Pregúntame lo que necesites! 💪');
+  mostrarPanelEstudiante();
 }
 </script>
 </body>
